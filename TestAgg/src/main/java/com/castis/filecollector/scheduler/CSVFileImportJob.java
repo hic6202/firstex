@@ -79,7 +79,7 @@ public class CSVFileImportJob extends QuartzJobBean {
 			logger.info("FileCollectorScheduler " +context.getJobDetail().getKey().getName()+" START");
 			fileImportComp.fileImport(tableName,fields,csvFileList,successFilePath,failFilePath, fieldTerminatedString, lineTerminatedString, fileSizeCheckInterval);
 			
-			
+			//tjost
 			
 			long end = System.currentTimeMillis();
 			logger.info("FileCollectorScheduler " +context.getJobDetail().getKey().getName()+" END SUCCESS :"+ (end - start)+"ms");
