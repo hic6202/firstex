@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.castis.filecollector.dao.CSVImportDAOMybatis">
+
+	<insert id="csvImport" parameterType="map">
+		LOAD DATA LOCAL INFILE #{fileName}
+		INTO TABLE ${tableName} 
+		FIELDS TERMINATED BY #{fieldTerminatedString} 
+		LINES TERMINATED BY #{lineTerminatedString}
+		(${fields})
+		<selectKey resultType="long" keyProperty="idx" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		        
+	</insert>
+	
+	
+	<select id="getTableLastIdValue" resultType="int" parameterType="map">
+		select idx from ${tableName} order by idx desc limit 1;
+	</select>
+	
+	<select id="isTableDataExist" resultType="int" parameterType="map">
+		select count(idx) from ${tableName} limit 1;
+	</select>
+	<!-- history 관련 -->
+	<select id="getLogTableStartIdx" resultType="java.lang.Long" parameterType="map">
+		select endidx from csvimport_history where type = #{tableName} order by id desc limit 1;
+	</select>
+	
+	<select id="getCSVImportCount" resultType="int" parameterType="map">
+		select count(idx) from ${tableName} 
+		<![CDATA[where idx >= #{startIdx}]]>
+	</select>
+	
+	<insert id="insertCSVImportHistory" parameterType="map">
+		insert ignore into csvimport_history
+			(type,fileName,startIdx,count,processTime)
+		values
+			(#{type},#{fileName},#{startIdx},#{count},now())
+	</insert>
+	
+	<select id ="getLogTableStartId" parameterType="map" resultType="java.lang.Long">
+		select idx from ${tableName} 
+			where idx > #{maxLogTableId} order by idx asc limit 1;
+	</select>
+	
+	<select id ="getLogTableMaxId" parameterType="map" resultType="java.lang.Long">
+		select idx from ${tableName} order by idx desc limit 1 ;
+	</select>
+	
+</mapper>

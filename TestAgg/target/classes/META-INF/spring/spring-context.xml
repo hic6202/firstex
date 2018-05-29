@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:batch="http://www.springframework.org/schema/batch" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	">
+
+	<context:component-scan base-package="com.castis.filecollector">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	<context:annotation-config />
+
+	<import resource="classpath:/META-INF/spring/db-config.xml" />
+	<import resource="classpath:/META-INF/spring/property-context.xml" />
+	<import resource="classpath:/META-INF/spring/scheduler.xml" />
+	
+	<bean id="fileImportComp" class="com.castis.filecollector.comp.FileImportComp" />
+	 	
+	<!-- <bean id="CSVImportDAOMybatis" class="com.castis.filecollector.dao.CSVImportDAOMybatis">
+		<property name="sqlSessionFactoryBean" ref="importSqlSessionFactory" />
+	</bean> -->
+	
+</beans>

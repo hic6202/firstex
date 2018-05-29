@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	">
+
+	<bean id="redundantExecutionCheckListener"
+		class="com.castis.filecollector.scheduler.RedundantExecutionCheckListener" />
+	
+	<bean id="channelWatchLogImportJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="durability" value="true" />
+		<property name="jobClass" value="com.castis.filecollector.scheduler.CSVFileImportJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="csvFilePath" value="#{fileCollectorProperty['channelWatchLog.paths']}" />
+				<entry key="successFilePath" value="#{fileCollectorProperty['successFile.path']}" />
+				<entry key="failFilePath" value="#{fileCollectorProperty['failFile.path']}" />
+				<entry key="tableName" value="#{fileCollectorProperty['channelWatchLog.tableName']}" />
+				<entry key="fields" value="#{fileCollectorProperty['channelWatchLog.fields']}" />
+				<entry key="fieldTerminatedString" value="#{fileCollectorProperty['channelWatchLog.fieldTerminatedString']}" />
+				<entry key="lineTerminatedString" value="#{fileCollectorProperty['channelWatchLog.lineTerminatedString']}" />
+				<entry key="fileSizeCheckInterval" value="#{fileCollectorProperty['fileSizeCheckInterval']}" />
+				<entry key="fileImportComp" value-ref="fileImportComp"/>
+			</map>
+		</property>
+	</bean>
+	
+	<!-- <bean id="channelWatchErrorLogImportJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="durability" value="true" />
+		<property name="jobClass" value="com.castis.filecollector.scheduler.CSVFileImportJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="csvFilePath" value="#{fileCollectorProperty['channelWatchErrorLog.paths']}" />
+				<entry key="successFilePath" value="#{fileCollectorProperty['successFile.path']}" />
+				<entry key="failFilePath" value="#{fileCollectorProperty['failFile.path']}" />
+				<entry key="tableName" value="#{fileCollectorProperty['channelWatchErrorLog.tableName']}" />
+				<entry key="fields" value="#{fileCollectorProperty['channelWatchErrorLog.fields']}" />
+				<entry key="fieldTerminatedString" value="#{fileCollectorProperty['channelWatchErrorLog.fieldTerminatedString']}" />
+				<entry key="lineTerminatedString" value="#{fileCollectorProperty['channelWatchErrorLog.lineTerminatedString']}" />
+				<entry key="fileSizeCheckInterval" value="#{fileCollectorProperty['fileSizeCheckInterval']}" />
+				<entry key="fileImportComp" value-ref="fileImportComp"/>
+			</map>
+		</property>
+	</bean> -->
+
+	<bean id="fileCollectorScheduler"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="channelWatchLogImportTrigger" />
+				<!-- <ref bean="channelWatchErrorLogImportTrigger" /> -->
+			</list>
+		</property>
+		<property name="globalTriggerListeners">
+			<list>
+				<ref bean="redundantExecutionCheckListener" />
+			</list>
+		</property>
+		<property name="quartzProperties">
+			<props>
+				<prop key="org.quartz.scheduler.instanceName">FileCollectorScheduler</prop>
+				<prop key="org.quartz.scheduler.instanceId">FileCollectorSchedulerInstance</prop>
+				<prop key="org.quartz.scheduler.rmi.export">false</prop>
+				<prop key="org.quartz.scheduler.rmi.proxy">false</prop>
+				<prop key="org.quartz.threadPool.class">org.quartz.simpl.SimpleThreadPool</prop>
+				<prop key="org.quartz.threadPool.threadCount">5</prop>
+				<prop key="org.quartz.jobStore.class">org.quartz.simpl.RAMJobStore</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="channelWatchLogImportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="channelWatchLogImportJob" />
+		<property name="cronExpression" value="#{fileCollectorProperty['scheduler.channelWatchLog.cronExpression']}" />
+	</bean>
+	<!-- <bean id="channelWatchErrorLogImportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="channelWatchErrorLogImportJob" />
+		<property name="cronExpression" value="#{fileCollectorProperty['scheduler.channelWatchErrorLog.cronExpression']}" />
+	</bean> -->
+</beans>

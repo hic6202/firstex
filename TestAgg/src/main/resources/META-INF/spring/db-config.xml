@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:batch="http://www.springframework.org/schema/batch" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	">
+	<!--For Developr -->
+	<context:property-placeholder location="classpath:META-INF/jdbc.properties" 
+		/>
+	<!--For Release -->
+	<!-- <context:property-placeholder
+		location="file:${catalina.home}/conf/FileCollector/jdbc.properties" /> -->
+
+	<bean id="vendorProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="SQL Server">sqlserver</prop>
+				<prop key="HSQL">hsql</prop>
+				<prop key="Oracle">oracle</prop>
+				<prop key="MySQL">mysql</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="databaseIdProvider" class="org.apache.ibatis.mapping.VendorDatabaseIdProvider">
+		<property name="properties" ref="vendorProperties" />
+	</bean>
+
+	<tx:annotation-driven mode="aspectj" />
+	<context:load-time-weaver aspectj-weaving="on" />
+	
+	<bean id="importDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.import.driver}" />
+		<property name="url" value="${jdbc.import.url}" />
+		<property name="username" value="${jdbc.import.user}" />
+		<property name="password" value="${jdbc.import.password}" />
+		<property name="maxActive" value="100" />
+		<property name="maxIdle" value="30" />
+		<property name="maxWait" value="10000" />
+		<property name="removeAbandoned" value="true" />
+		<property name="removeAbandonedTimeout" value="60" />
+		<property name="logAbandoned" value="true" />
+		<property name="defaultTransactionIsolation">
+			<util:constant static-field="java.sql.Connection.TRANSACTION_READ_UNCOMMITTED" />
+		</property>
+		<property name="testOnBorrow" value="true" />
+		<property name="validationQuery" value="select 1" />
+	</bean>
+	
+	<bean id="importSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="importDataSource" />
+		<property name="mapperLocations" value="classpath*:META-INF/mybatis/*-mapper.xml" />
+		<property name="configLocation"
+			value="classpath:META-INF/mybatis/mybatis-config.xml" />
+		<property name="databaseIdProvider" ref="databaseIdProvider" />
+	</bean>
+	
+	<bean id="importTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="importDataSource" />
+	</bean>
+
+</beans>
