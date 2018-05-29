@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
-  <display-name>FileCollector</display-name>
+  <display-name>TestAgg</display-name>
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>
@@ -9,11 +9,11 @@
   </context-param>
   <context-param>
     <param-name>propertiesLocation</param-name>
-    <param-value>classpath:META-INF/FileCollector.properties</param-value>
+    <param-value>classpath:META-INF/TestAgg.properties</param-value>
   </context-param>
   <context-param>
     <param-name>webAppRootKey</param-name>
-    <param-value>castis.FileCollector</param-value>
+    <param-value>castis.TestAgg</param-value>
   </context-param>
   <context-param>
     <param-name>log4jConfigLocation</param-name>
@@ -46,12 +46,12 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping -->
   <servlet>
-    <servlet-name>FileCollector</servlet-name>
+    <servlet-name>TestAgg</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
-    <servlet-name>FileCollector</servlet-name>
+    <servlet-name>TestAgg</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
   <context-param>
