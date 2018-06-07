@@ -195,3 +195,457 @@ CREATE TABLE tbl_llt_socontenthitcountpermonth (
   UNIQUE KEY socontenthitcountpermonth_uk (date,so_cd,file_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+////mysql tool query ..1
+CREATE TABLE `tbl_test_vod_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
+  `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `filename` varchar(255) DEFAULT NULL,
+  `log_date` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
+
+SELECT server_ip, filename, COUNT(*) hit_count
+ , DATE_FORMAT(log_date, '%Y-%m-%d') date
+ , DATE_FORMAT(log_date, '%H') hour
+ , DATE_FORMAT(log_date, '%U') week_of_year
+ , DATE_FORMAT(log_date, '%w') day_of_week -- 0 ~ 6
+ -- , client_ip
+FROM tbl_test_vod_log
+GROUP BY server_ip, filename
+
+SELECT SUBSTRING(date, 1, 6) FROM tbl_llt_servercontenthitcountperday
+
+
+   , DATE_FORMAT(log_date, '%Y%m%d') date
+   , DATE_FORMAT(log_date, '%H') hour
+  GROUP BY server_ip, filename
+
+INSERT INTO tbl_llt_socontenthitcountperhour
+ (date, hour, so_cd, so_nm, file_name, hit_count) 
+SELECT 
+ l.date, l.hour, 
+ s.so_cd, s.so_nm, l.filename, SUM(l.hit_count) hit_count
+FROM (
+  SELECT client_ip, filename, 1 hit_count
+   , DATE_FORMAT(log_date, '%Y%m%d') date
+   , DATE_FORMAT(log_date, '%H') hour
+  FROM tbl_test_vod_log
+) l
+INNER JOIN (
+  SELECT v.server_ip, v.so_cd, s.so_nm FROM tbl_llt_so s
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+) s
+ON l.client_ip = s.server_ip
+GROUP BY s.so_cd, l.filename
+
+
+
+CREATE TABLE `tbl_llt_so` (
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `so_type` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_server` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `server_id` varchar(45) DEFAULT NULL,
+  `so_cd` varchar(45) NOT NULL COMMENT '지역 SO 식별 코드',
+  `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server IP',
+  `max_band_width` double DEFAULT NULL,
+  `avl` int(11) DEFAULT NULL COMMENT '가용량',
+  `server_status` varchar(2) NOT NULL COMMENT 'server 상태(00: 제외 중지, 01 제외 실행, 10 투입 중지, 11 투입 실행)',
+  PRIMARY KEY (`id`,`so_cd`,`server_nm`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='server 테이블';
+
+select * from channel_watch_log;
+
+CREATE TABLE `tbl_llt_service_flag` (
+  `monitoring_time` datetime NOT NULL,
+  `update_time` datetime NOT NULL COMMENT '마지막 변경 시간',
+  `service_number` int NOT NULL COMMENT '유효 서비스 flag'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_test_monitoring_session_bak` (
+  `m_time` datetime NOT NULL COMMENT 'Monitoring 시간',
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `sessionsper5minute_uk` (`m_time`,`vod_ip`,`stb_ip`,`file_nm`),
+  KEY `time_idx` (`m_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블';
+
+CREATE TABLE `tbl_test_monitoring_session` (
+  `idx` int NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블';
+
+select count(*) FROM tbl_test_monitoring_session 
+
+CREATE TABLE `tbl_test_monitoring_history` (
+  `id` int NOT NULL DEFAULT '1',
+  `end_idx` int NOT NULL,
+  `monitoring_count` int NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 이력 테이블';
+insert into tbl_test_monitoring_history  (id, end_idx, monitoring_count)
+VALUES (1, 0, 0);
+
+CREATE TABLE `tbl_llt_sessionsper5minute` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `event_time` datetime NOT NULL COMMENT '등록시간',
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `minute` int(11) NOT NULL,
+  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sessionsper5minute_uk` (`date`,`hour`,`minute`,`server_id`,`so_cd`),
+  KEY `time_idx` (`event_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+-- Reset history
+UPDATE tbl_test_monitoring_history 
+	SET end_idx = 0, monitoring_count = 0
+WHERE id = 1;
+select * from tbl_test_monitoring_history where id = 1;
+
+-- Update history
+UPDATE tbl_test_monitoring_history 
+	SET end_idx = 100, monitoring_count = (monitoring_count+1)
+WHERE id = 1
+
+-- current session -> agg1 //임시 데이터임.
+  SELECT m.vod_ip 
+    , s.so_cd, s.so_nm
+    , m.file_nm
+    , 1 as count, m.traffic
+  FROM tbl_test_monitoring_session m
+  INNER JOIN (
+    SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+    INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+  ) s ON m.log_date >= 5001 and m.log_date <= 6000 AND m.stb_ip = s.server_ip
+
+-- current vod serv traffic agg : 매번 최신만 갖는 데이터
+SELECT v.server_id, v.server_ip, v.server_nm, a.traffic
+FROM (
+  SELECT a.vod_ip, sum(a.traffic) as traffic
+  FROM (
+   -- same as above qry : session -> agg1 st
+    SELECT m.vod_ip 
+      , s.so_cd, s.so_nm
+      , m.file_nm
+      , 1 as count, m.traffic
+    FROM tbl_test_monitoring_session m
+    INNER JOIN (
+      SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+      INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+    ) s ON m.idx >= 5001 and m.idx <= 6000 AND m.stb_ip = s.server_ip
+    AND m.vod_ip != '172.244.221.0' -- test!!
+   -- same as above qry : session -> agg1 end
+  ) a group by a.vod_ip
+) a
+-- INNER JOIN tbl_llt_server v ON a.vod_ip = v.server_ip -- AND v.so_type = 'MNG'
+RIGHT OUTER JOIN (
+  SELECT v.server_id, v.server_ip, v.server_nm FROM tbl_llt_so s
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type = 'MNG'
+) v ON a.vod_ip = v.server_ip -- AND v.so_type = 'MNG'
+
+-- current so-file_nm agg : 매번 최신만 갖는 데이터
+SELECT a.so_cd, a.file_nm, sum(a.count), sum(a.traffic)
+FROM (
+ -- same as above qry : session -> agg1 st
+  SELECT m.vod_ip 
+    , s.so_cd, s.so_nm
+    , m.file_nm
+    , 1 as count, m.traffic
+  FROM tbl_test_monitoring_session m
+  INNER JOIN (
+    SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+    INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+  ) s ON m.idx >= 5001 and m.idx <= 6000 AND m.stb_ip = s.server_ip
+ -- same as above qry : session -> agg1 end
+) a group by a.so_cd, a.file_nm
+
+-- current so traffic agg : 매번 최신만 갖는 데이터
+SELECT s.so_cd, a.traffic
+FROM (
+  SELECT a.so_cd, sum(a.traffic) as traffic
+  FROM (
+   -- same as above qry : session -> agg1 st
+    SELECT m.vod_ip 
+      , s.so_cd, s.so_nm
+      , m.file_nm
+      , 1 as count, m.traffic
+    FROM tbl_test_monitoring_session m
+    INNER JOIN (
+      SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+      INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+    ) s ON m.idx >= 5001 and m.idx <= 6000 AND m.stb_ip = s.server_ip
+   -- same as above qry : session -> agg1 end
+   AND s.so_cd != '01' -- test!!
+  ) a group by a.so_cd
+) a
+RIGHT OUTER JOIN tbl_llt_so s
+ON s.so_cd = a.so_cd
+/* /////////////////////////////////////////////// */
+-- check status qry --
+  select count(*) from tbl_test_monitoring_session;
+  select * from tbl_test_monitoring_history;
+  select date, hour, minute, count(*) from tbl_llt_sessionsper5minute
+  group by date, hour, minute;
+/* /////////////////////////////////////////////// */
+select hour, minute, count(*) from tbl_llt_sessionsper5minute
+group by hour, minute;
+
+
+SELECT table_schema, SUM((data_length+index_length)/1024/1024) MB 
+FROM information_schema.tables GROUP BY 1;
+-- server traffic hour
+INSERT INTO tbl_llt_servertrafficperhour
+ (date, hour, server_id, server_nm, traffic) 
+SELECT f.date, f.hour, f.server_id, s.server_nm, f.traffic
+FROM (
+  SELECT date, hour, server_id, SUM(traffic) as traffic
+  FROM tbl_llt_sessionsper5minute
+  WHERE date = '20180531' AND hour = 15 
+  GROUP BY server_id, date, hour
+) f
+INNER JOIN (
+  SELECT v.server_nm, v.server_id
+  FROM tbl_llt_so s
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type = 'MNG'
+) s ON f.server_id = s.server_id
+;
+-- 시간
+INSERT INTO tbl_llt_servertrafficperhour (date, hour, server_id, server_nm, traffic) 
+SELECT f.date, f.hour, f.server_id, s.server_nm, f.traffic FROM ( 
+  SELECT date, hour, server_id, ROUND(SUM(traffic)/24) as traffic 
+  FROM tbl_llt_sessionsper5minute WHERE date = '20180531' AND hour = 16 
+  GROUP BY server_id, date, hour 
+) f 
+INNER JOIN ( 
+  SELECT v.server_id, v.server_nm FROM tbl_llt_so s 
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type = 'MNG' 
+) s ON f.server_id = s.server_id
+
+
+
+
+-- 일
+INSERT INTO tbl_llt_servertrafficperday (day_of_week, week_of_year, date, server_id, server_nm, traffic) 
+SELECT 7, 3, date, server_id, server_nm, ROUND(SUM(traffic)/2) as traffic 
+FROM tbl_llt_servertrafficperhour 
+WHERE date = '20180531'
+GROUP BY server_id, server_nm, date
+-- ON duplicate key update -- select문에 group by 있으면 안된다고 함...
+
+-- 월
+INSERT INTO tbl_llt_servertrafficpermonth
+ (date, server_id, server_nm, traffic) 
+SELECT SUBSTRING(date, 1, 6) date, server_id, server_nm, ROUND(SUM(traffic)/2) as traffic 
+FROM tbl_llt_servertrafficperday 
+WHERE SUBSTRING(date, 1, 6) = '201805'
+GROUP BY server_id, server_nm, date
+
+					SELECT COUNT(*) FROM ( 
+          SELECT distinct date FROM tbl_llt_servertrafficperday 
+          WHERE SUBSTRING(date, 1, 6) = '201805' 
+          ) a ;
+
+
+-- maria event scheduler
+SHOW EVENTS ;
+SELECT * FROM INFORMATION_SCHEMA.EVENTS;
+
+/* /////////////////////////////////////////////// */
+
+
+select distinct m_time from tbl_test_monitoring_session;
+
+SELECT server_id, so_cd, file_nm, sum(hit_count), sum(traffic)
+FROM (
+  SELECT h.server_id, h.server_ip, h.server_nm
+    -- /*, m.m_time */, m.file_nm
+    , s.so_cd, s.so_nm, 1 as hit_count, m.traffic
+    
+  -- SELECT distinct server_id, so_cd, file_nm
+  FROM tbl_test_monitoring_session m
+
+  INNER JOIN (
+    SELECT server_id, server_ip, server_nm FROM tbl_llt_server 
+    WHERE so_cd in (
+      SELECT so_cd FROM tbl_llt_so
+      WHERE so_type = 'MNG'
+    )
+  ) h ON m.vod_ip = h.server_ip
+
+  INNER JOIN (
+    SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+    INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+  ) s ON m.stb_ip = s.server_ip
+)
+GROUP BY server_id, so_cd, file_nm;
+
+/* -> 1만 로그(5분) 48초 소요 
+INNER JOIN 한번 하면 2.5초 정도, 
+그러나, 두번째 하면 굉장히 소요됨.
+*/
+
+//GROUP BY vod_ip, stb_ip
+
+-- 30초 모니터링 로그 -> 5분 분량 OK
+SELECT vod_ip, so_cd, file_nm, sum(count) as hit_count, sum(traffic)
+FROM (
+  SELECT 
+    m.vod_ip, m.file_nm -- m.m_time 
+    , s.so_cd, s.so_nm -- , s.server_ip
+    , 1 as count, m.traffic
+  FROM tbl_test_monitoring_session m
+
+  INNER JOIN (
+    SELECT v.so_cd, v.server_ip, s.so_nm FROM tbl_llt_so s
+    INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+  ) s ON m.stb_ip = s.server_ip
+) f
+GROUP BY f.vod_ip, f.so_cd, f.file_nm
+
+-- 2018-05-31 집계 : 트래픽
+
+////mysql tool query ..2
+CREATE TABLE `tbl_test_monitoring_session` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=6001 DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블';
+
+CREATE TABLE `tbl_test_vod_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
+  `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `filename` varchar(255) DEFAULT NULL,
+  `log_date` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
+
+
+select distinct server_ip from tbl_test_vod_log
+select distinct client_ip from tbl_test_vod_log
+
+
+### [AGG 1: vod_log -> servercontenthitcountperhour]
+INSERT INTO tbl_llt_servercontenthitcountperhour
+ (date, hour, server_id, server_nm, file_name, hit_count) 
+SELECT l.date, l.hour, s.server_id, s.server_nm, l.filename, l.hit_count
+FROM (
+
+  SELECT date, hour, server_ip, filename, sum(hit_count) hit_count
+  FROM (
+    SELECT server_ip, filename, 1 hit_count
+     , DATE_FORMAT(log_date, '%Y%m%d') date
+     , DATE_FORMAT(log_date, '%H') hour
+     -- , client_ip
+    FROM tbl_test_vod_log
+  ) a  
+  GROUP BY date, hour, server_ip, filename
+  
+) l
+INNER JOIN (
+  SELECT v.server_id, v.server_ip, v.server_nm FROM tbl_llt_so s
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type = 'MNG'
+) s
+ON l.server_ip = s.server_ip
+ORDER BY date, hour, server_id
+
+### [AGG 2: servercontent hitcount per hour -> servercontenthitcountper day]
+INSERT INTO tbl_llt_servercontenthitcountperday
+ (day_of_week, week_of_year, date, server_id, server_nm, file_name, hit_count) 
+SELECT DATE_FORMAT(STR_TO_DATE(date, '%Y%m%d'), '%w') day_of_week
+ , DATE_FORMAT(STR_TO_DATE(date, '%Y%m%d'), '%U') week_of_year
+ , date
+ , server_id, server_nm, file_name
+ , SUM(hit_count) hit_count
+FROM tbl_llt_servercontenthitcountperhour
+GROUP BY date, server_id, file_name;
+
+### [AGG 3: servercontent hitcount per day -> servercontenthitcountper month]
+INSERT INTO tbl_llt_servercontenthitcountpermonth
+ (date, server_id, server_nm, file_name, hit_count) 
+SELECT date, server_id, server_nm, file_name, SUM(hit_count) hit_count
+FROM (
+  SELECT SUBSTRING(date, 1, 6) date
+   , server_id, server_nm, file_name
+   , hit_count
+  FROM tbl_llt_servercontenthitcountperday
+) a
+GROUP BY date, server_id, file_name;
+
+
+### [AGG 4: vod_log -> socontenthitcountperhour]
+INSERT INTO tbl_llt_socontenthitcountperhour
+ (date, hour, so_cd, so_nm, file_name, hit_count) 
+SELECT 
+ l.date, l.hour, 
+ s.so_cd, s.so_nm, l.filename, SUM(l.hit_count) hit_count
+FROM (
+  SELECT client_ip, filename, 1 hit_count
+   , DATE_FORMAT(log_date, '%Y%m%d') date
+   , DATE_FORMAT(log_date, '%H') hour
+  FROM tbl_test_vod_log
+) l
+INNER JOIN (
+  SELECT v.server_ip, v.so_cd, s.so_nm FROM tbl_llt_so s
+  INNER JOIN tbl_llt_server v ON s.so_cd = v.so_cd AND s.so_type != 'MNG'
+) s
+ON l.client_ip = s.server_ip
+GROUP BY l.date, l.hour, s.so_cd, l.filename;
+
+### [AGG 5: socontenthitcountperhour -> socontenthitcountperday]
+INSERT INTO tbl_llt_socontenthitcountperday
+ (day_of_week, week_of_year, date, so_cd, so_nm, file_name, hit_count) 
+SELECT DATE_FORMAT(STR_TO_DATE(date, '%Y%m%d'), '%w') day_of_week
+ , DATE_FORMAT(STR_TO_DATE(date, '%Y%m%d'), '%U') week_of_year
+ , date
+ , so_cd, so_nm, file_name
+ , SUM(hit_count) hit_count
+FROM tbl_llt_socontenthitcountperhour
+GROUP BY date, so_cd, file_name;
+
+
+### [AGG 6: socontenthitcountperday -> socontenthitcountpermonth]
+INSERT INTO tbl_llt_socontenthitcountpermonth
+ (date, so_cd, so_nm, file_name, hit_count) 
+SELECT date, so_cd, so_nm, file_name, SUM(hit_count) hit_count
+FROM (
+  SELECT SUBSTRING(date, 1, 6) date
+   , so_cd, so_nm, file_name
+   , hit_count
+  FROM tbl_llt_socontenthitcountperhour
+) a
+GROUP BY date, so_cd, file_name;
+
+
+CREATE TABLE `tbl_test_monitoring_session` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `log_date` datetime NOT NULL,
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블';
