@@ -1,0 +1,402 @@
+day_of_week : 0,sunday ~ 6,saturday (%w)
+week_of_year : 1 ~ 53 (%V)
+
+[ LLTDataAggregator ]
+###1. 30초 단위 JOB : 0초, 30초 에 동작!
+ 1.1 API 연동 raw 데이터 얻기
+  - Vod모니터링API콜 => 프로세스 상태 얻기, trafficLimit(무시, DB 설정 값 사용)
+  - 세션/트래픽API콜 => 세션 트래픽 데이터 취득
+  
+ 1.2 트래픽 추이 5분단위 집계용 임시 데이터 처리
+  - table_A(x0~x4.59.999millisec), table_B(x5~x9.59.999millisec) 의 2개 테이블 사용. 시간대에 맞는 테이블에 저장.
+  - max 1000개의 세션정보를(vodIp, stbIp, filename..) 저장
+  
+ 1.3 현재 상태 Data 생성
+  - 1.2에 저장한 현재 세션정보를 이용하여
+  - Data: 서버 별, SO 별, SO-콘텐츠 별 agg 하여
+   -> 현재 상태 나타내는 3개의 inactive 테이블(flag 관련)에 저장한다.(이전 단계에 truncate 되어 있어, 혀재 값만 갖는다)
+  - flag 값을 변경하고, 이에따라 inactive 된 3개의 테이블을 truncate 한다.
+  cf) flag 테이블: 1,2 값.  Active/inactive => table_1, table_2.
+  
+ 1.4 알람 처리 ..ing
+ .프로세스 off, 서버 or SO 트래픽 임계치 초과, SO 콘텐츠 임계치 넘는지 확인 하여 Alarm 발생시키기 위해서는
+ ===> 현재 상태를 항상 관리하면서(서버 설정 및 알람설정 변경시 업데이트 필요!), 모니터링 한 값과 비교하는 처리 필요.
+ 또한, SO 의 모든 VOD 서버 정보또한 관리하고 있어야 => 세션정보에서 stbIp 로 어느 SO 인지 알 수 있을것임.
+
+ .VOD server info : id, ip, name. SO vod server info : id, ip, name. 얻어온다(매니저 떠 있는 동안)
+ .알람설정 정보 가져오기
+  1) 서버별 : 프로세스 알람(on/off), 트래픽 알람(on/off), 임계치%-> 서버 max_bandwidth 에서의
+  2) SO 별(콘텐츠알람 정보 포함) : SO별- 임계치, 콘텐츠 임계치 설정.
+   - 해당SO 임계치계산: 전체 홈초이스 VOD 서버 임계치 * (SO임계치 / 100) ;
+
+###2. 5분 단위 JOB : x0분 20초, x5분 20초 에 동작하는 것이 좋지 않을 까?
+ 2.1 x0분 대에는 x5분 대에 입력한 테이블B(바로 전까지 데이터 입력한) 의 data를 vodIp, stbIp 기준으로 sum 하고,
+  - 5분 동안 진행한 30초 모니터링 수(distinct로 알 수 있음)로 평균 hitCount, traffic 값을 구하여
+  => 5minSession 테이블에 insert (?? 최대 2or3일 데이터만 갖고, 삭제해도 무방. 성능 고려하여 판단한다!)
+   - 삭제할 경우, 일 단위 JOB 에서 , 현재 날짜 기준 3일전~ 과거 Data 모두 삭제하면 될 듯.
+
+###3. 5분 단위 JOB2 or 시 단위 JOB : 트래픽 시, 일(x), 월(x) 단위 집계. 20초 대에 하면 될 듯.
+ 3.1 5minSession 테이블의 '1시간전&현재시간' 데이터 -> '1시간전&현재시간'에 해당하는 트래픽 시 단위 테이블에 집계(insert & update)
+ 3.2 트래픽 시 테이블 '1시간전&현재시간' 데이터 -> '1시간전&현재시간'에 해당하는 트래픽 일 테이블에 집계(insert & update)
+ 3.3 트래픽 일 테이블 '1시간전&현재시간' 데이터 -> '1시간전&현재시간'에 해당하는 트래픽 월 테이블에 집계(insert & update)
+ 
+ !! 시간의 초반, 일의 초반, 월의 초반에 JOB이 수행되면
+  => 이전 시간, 전 날, 전 월의 데이터를 더 가져와 집계하는 것이 효율적일 것 같은데.. 생각해보자!!
+ 
+###4. vod_log 집계
+ 4.0 기본: id 기준으로 이력 남기면서 => 조금씩 1000row 씩 정도 주기적으로 읽어와, 
+ 
+ 4.1 임시_테이블에 저장. 
+  임시테이블은 최대 3일 것만 남김.
+ - 임시테이블에서 '전 시간 & 현재 시간' 데이터 읽어(dupl 업데이트 안되면, 서버로 읽어와야함) => 시 테이블 insert or update 처리.
+ - '전 시간 & 현재 시간'에 해당하는 시 테이블 데이터 읽어 => agg => '전 시간 & 현재 시간'에 해당하는 일 테이블 insert or update 처리.
+ - '전 시간 & 현재 시간'에 해당하는 일 테이블 데이터 읽어 => agg => '전 시간 & 현재 시간'에 해당하는 월 테이블 insert or update 처리.
+  
+  
+ 4.2 복잡 : 임시_테이블 없이 처리하는 것으로, 
+  즉, 1000개 log의 start~end 시간에 해당하는 '시/일/월' 테이블 data 를 읽어와
+  
+  읽어온 data 기준으로, 1000개 log 값을 해당 키에 맞는 row 에 업데이트하고, 
+                                           키에 맞는 row 없으면 insert.
+  하여, 업데이트orInsert 된 데이터만 해당 테이블에 InsertOrUpdate 한다.
+ 
+
+---------------------
+[모니터링: 30초 간격]
+.서버 모니터링 .SO 모니터링 : 30초 간격으로 콜, 5분 간격으로 """전체, 서버별, SO별 traffic/hitCount""" 평균 값 DB저장 (!!서버/SO 동시 선택 없음!!)
+  - Vod모니터링API콜하여
+   => LSM/VOD 서버 프로세스 on/off 정보, trafficLimit 가져오고
+   ==> 서버 프로세스 on/off 표시 갱신 & on->off 로 변동이 있는 것 알람(!!)
+
+  - 세션/트래픽API콜하여
+   => (VOD 7대 최대 1000세션) 세션 정보 가져옴: 한 세션당 hitCount = 1 로 보면 됨.
+   ==> vodIp, stbIp, fileName 기준 AGG 
+         sum(currentBandwidth) as traffic, count(fileName) as hitCount, vodIp, stbIp, fileName ..group by vodId, stbIp, fileName
+         즉, 머지된 vodIp, stbIp, fileName, traffic, hitCount 리스트 
+   ==> 관리하는 서버정보에서 vodId, vodName, soId, soName 필드 얻어 추가, stpIp 필드 제거
+         vodId, vodIp, vodName, soId, soName, stbIp, fileName, traffic, hitCount 
+   ==> 실시간 모니터링용 집계: vodId별 traffic, soId별 traffic, soId - fileName 별 tf /hitCount 집계 
+   ==> 추이 나타낼 5분간 평균 표시 및 DB 저장용 집계: 
+전체: traffic, hitCount
+서버 선택: vodId, traffic, hitCount
+SO 선택: soId, traffic, hitCount
+yyyyMMdd, h, m, sec
+! vodId, vodName 정보는 LLT매니저에서 관리하는 홈초이스 VOD 서버
+! soId, soName 정보는 LLT매니저에서 관리하는 SO의 VOD서버 ip로 구함
+!! 서버, SO 선택? 1)선택 없음. 2)서버 1개 선택. 3)SO 1개 선택.  3가지.
+0. vod_log : RC 에서 저장. 1시간에 한번 수행하면 될 듯.
+------------- 실시간 추이 용도 및 Traffic 집계 기반 테이블 -------------
+0. vodsessionper30sec
+Idx, vod_ip, file_nm, stb_ip, traffic + server_id, so_cd
+1. vodsessionper5minute //2일치 정도만 유지 예정(?), 일단 삭제 고려 안함.
+yyyyMMddhhmm, vodId, vodIp, vodName, soId, soName, stbIp, fileName, traffic, hitCount 
+
+|열 이름|기본키|데이터 형식|Null|값|설명|
+|-------|-----|----------|----|--|----|
+|event_time|PK(1)|Datetime|Not Null|||
+|date|PK(2)|VARCHAR(8)|Not Null| |날짜(yyyyMMdd)|
+|hour|PK(3)|Tinyint|Not Null||시|
+|minute||int|Not Null||5분 단위로 저장될 예정|
+|server_id|PK(4)|Int|Not Null| |VOD 서버 아이디|
+|server_name||VARCHAR(255)|||VOD 서버 이름|
+|so_cd|PK(5)|VARCHAR(45)|||SO 코드|
+|so_name||VARCHAR(255)|||SO 이름|
+|traffic||Bigint|||순간 대역폭 평균|
+|hit_count||int|||순간 hit count 평균|
+
+ ⇒ 전체, 서버 선택, SO 선택에 따라 Group by 해서 사용!
+ ⇒ LLT 매니저와 DB 사이에 ‘모니터링App’ 을 둔다면: 하루치 위 데이터를 갖고 있다가, 요청에 따라 agg 해서 전달 할 수 있을 듯.
+ 그러면, server_id, so_id = 0 일 경우, 전체로 하면 같은 DTO로 사용하면 될 듯.
+ ⇒ 5분 단위로 위 형태로 저장하고, 추이 데이터 갱신은 … 적합한 것으로(전체 데이터 DB에서 가져오거나, 5분 단위 데이터 저장 전에 현재 선택된 형태로 1 tick 데이터 제공하거나)
+
+
+
+
+[집계: 1) 트래픽]
+.시간, 일, 월 단위로 집계 => 평균 값
+시: 02분, 5분 테이블 전 시간 데이터 대상,
+일: 01시, 시 테이블 전 날 데이터 대상.
+월: 1일 3시, 일 테이블 전 월  데이터 대상.
+
+date, hour, server_id, server_nm, traffic
+
+! 이슈1: https://mariadb.com/kb/en/library/insert-on-duplicate-key-update/
+
+[집계: 2) hit_count]
+. 시간 기준: 로그의 end_time (?) 으로 임시로. 확인 필요.
+. 시간, 일, 월 단위로 집계 => 합
+------------- 여기부터 리포트 용 테이블 ------------- 트래픽은 1번 테이블 기반
+2. serverTrafficPer(Hour,Day,Month)
+열 이름
+기본키
+데이터 형식
+Null
+값
+설명
+date
+PK(1)
+VARCHAR(8)
+Not Null
+ 
+날짜(yyyyMMdd)
+월 테이블은 (yyyyMM)
+day_of_week
+
+
+Tinyint
+Not Null
+Day 테이블에만
+1 ~ 7 (Mon ~ Sun)
+!! Date, sql 에서 다 다름
+서로 확인 필요!!
+week_of_year
+PK(2)
+Tinyint
+Not Null
+Day 테이블에만
+Week number 1 ~ 52/53
+hour
+PK(3)
+Tinyint
+Not Null
+Hour 테이블에만
+시
+server_id
+PK(4)
+Int
+Not Null
+ 
+VOD 서버 아이디
+0 이면 전체서버
+server_name
+
+
+VARCHAR(50)
+
+
+ 
+VOD 서버 이름
+traffic
+ 
+Bigint
+ 
+ 
+최대 대역폭
+   !! 시: 7*24*(날짜수 최대 3), 일: 7*(날짜수 최대 31. 주는 52주), 월: 7*월 수
+3. soTrafficPer(Hour,Day,Month)
+열 이름
+기본키
+데이터 형식
+Null
+값
+설명
+date
+PK(1)
+VARCHAR(8)
+Not Null
+ 
+날짜(yyyyMMdd)
+월 테이블은 (yyyyMM)
+day_of_week
+
+
+int
+Not Null
+Day 테이블에만
+1 ~ 7 (Mon ~ Sun)
+week_of_year
+PK(2)
+int
+Not Null
+Day 테이블에만
+Week number 1 ~ 52/53
+hour
+PK(3)
+Tinyint
+Not Null
+Hour 테이블에만 있음.
+시
+so_id
+PK(4)
+Int
+Not Null
+ 
+SO 아이디
+so_name
+
+
+VARCHAR(50)
+
+
+ 
+SO 이름
+traffic
+ 
+Bigint
+ 
+ 
+최대 대역폭
+   !! 시: 20(so수)*24*(날짜수 최대 3), 일: 20*(날짜수 최대 31. 주는 52주), 월: 7*월 수
+
+4. serverHitCountPer(Hour,Day,Month)
+5. soHitCountPer(Hour,Day,Month)
+6. serverContentHitCountPer(Hour,Day,Month)
+열 이름
+기본키
+데이터 형식
+Null
+값
+설명
+date
+PK(1)
+VARCHAR(8)
+Not Null
+ 
+날짜(yyyyMMdd)
+월 테이블은 (yyyyMM)
+day_of_week
+
+
+int
+Not Null
+Day 테이블에만
+1 ~ 7 (Mon ~ Sun)
+week_of_year
+PK(2)
+int
+Not Null
+Day 테이블에만
+Week number 1 ~ 52/53
+hour
+PK(3)
+Tinyint
+Not Null
+Hour 테이블에만
+시
+server_id
+PK(4)
+Int
+Not Null
+ 
+VOD 서버 아이디
+0 이면 전체서버
+server_name
+
+
+VARCHAR(50)
+
+
+ 
+VOD 서버 이름
+file_name
+PK(5)
+VARCHAR(50) ?
+Not Null
+
+
+
+
+count
+ 
+Bigint
+ 
+ 
+최대 대역폭
+   !! 시: 7*24*(날짜수 최대 3)*콘텐츠, 일: 7*(날짜수 최대 31. 주는 52주), 월: 7*월 수
+
+
+
+
+
+
+7. soContentHitCountPer(Hour,Day,Month)
+열 이름
+기본키
+데이터 형식
+Null
+값
+설명
+date
+PK(1)
+VARCHAR(8)
+Not Null
+ 
+날짜(yyyyMMdd)
+day_of_week
+
+
+int
+Not Null
+Day 테이블에만
+1 ~ 7 (Mon ~ Sun)
+week_of_year
+PK(2)
+int
+Not Null
+Day 테이블에만
+Week number 1 ~ 52/53
+hour
+PK(3)
+Tinyint
+Not Null
+Hour 테이블에만 있음.
+시
+so_id
+PK(4)
+Int
+Not Null
+ 
+SO 아이디
+so_name
+
+
+VARCHAR(50)
+
+
+ 
+SO 이름
+file_name
+PK(5)
+VARCHAR(50) ?
+Not Null
+
+
+
+
+count
+ 
+int
+ 
+ 
+최대 대역폭
+
+
+/////////////////////////
+  ? 알람은 어떻게, 모니터링 하면서 발생시켜야 할 것 같은데...
+   - 발생한 곳 => 다음번 모니터링시 아직 발생이면 알람 아니라고 한 것 같음. 해소 된 후, 다시 발생시 알람. 이 단위는 30초겠지.
+   ? 알람 종류는 ? 프로세스 off(on 상태인데 죽은 것), 트래픽 리미트 초과 정도...
+
+   .오늘 발생한 알람 총 수
+     ? 서버 별, SO 별 총 수는 같아야 하지 않나? ==> 확인 필요.
+   .현재 알람 발생 서버/SO
+  ? 순간트래픽 단위는
+
+/////////////////////////
+
+1. 트래픽 리포트: 30초 간격 모니터링한 값을 5분 간격으로 평균구하여 저장하는데..
+ - 시(max 3일), 일(max 31일), 요일(max 10주), 주(max 52주), 월(max 12) //일,요일,주는 일단위로
+   !! 주 단위 집계해야 할 것 같음!!
+ - SO 단위, 서버 단위 //별도 테이블로 나눠 집계 !!다중선택 가능
+  ? 서버 대상은 ? 홈초이스 VOD 서버만?
+
+2. 콘텐츠 HIT: VOD로그를 RC로 수집, LogAgg로 집계한다.
+ - 시, 일, 주, 월 ?
+ - 선택조건: SO 단위, 서버 단위, 콘텐츠(라이선스 시작일 ~ 종료일), So별 콘텐츠, 서버별 콘텐츠 //별도 테이블로 나눠 집계 !!한 개의 SO/서버/콘텐츠만 선택 가능
+  ! 전체 집계가 있으면 => '콘텐츠' 테이블은 필요 없을 듯.
+ - 비교조건: SO 단위, 서버 단위, 콘텐츠 !!다중 선택 가능
+? hit_count 는 시작시간 기준? 종료시간 기준?
+? serverIp 는 홈초이스 VOD 서버
+? clientIp 는 SO VOD 서버 로 => so 알 수 있나?
+
+
+
