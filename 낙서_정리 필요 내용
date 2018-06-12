@@ -61,8 +61,83 @@
 
 
 3. 테이블 만들어 넣기.
-temp_vodsessionper30sec (
-)
+CREATE TABLE `tbl_llt_current_service_flag` (
+  `update_time` datetime NOT NULL COMMENT '마지막 변경 시간',
+  `service_name` varchar(255) NOT NULL COMMENT '플래그 사용 서비스 명',
+  `flag` int(11) NOT NULL COMMENT 'Active 서비스 flag(1 or 2)',
+  UNIQUE KEY `currentserviceflag_uk` (`service_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO tbl_llt_current_service_flag (update_time, service_name, flag) 
+VALUES (now(), 'session monitoring', 1);
+
+CREATE TABLE `tbl_llt_current_serverinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  -- `process_alarm` 
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_soinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsoinfo_1_uk` (`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_socontentinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsocontentinfo_1_uk` (`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_serverinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  -- `process_alarm` 
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_soinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsoinfo_2_uk` (`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_socontentinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsocontentinfo_2_uk` (`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+========
 
 CREATE TABLE tbl_llt_sessionsper5minute (
   event_time datetime NOT NULL COMMENT '등록시간',
