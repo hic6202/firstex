@@ -1,21 +1,4 @@
 [session/traffic 집계]
--- flag 테이블 추가(명칭 등 임시)
-CREATE TABLE `tbl_llt_service_flag` (
-  `monitoring_time` datetime NOT NULL,
-  `update_time` datetime NOT NULL COMMENT '마지막 변경 시간',
-  `service_number` int NOT NULL COMMENT '유효 서비스 flag'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `tbl_test_monitoring_session` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
-  `log_date` datetime NOT NULL,
-  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
-  `file_nm` varchar(255) DEFAULT NULL,
-  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
-  `traffic` bigint(20) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`idx`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블';
-
 ### [AGG 1: 5minSessTraff -> servertrafficperhour]
 
 -- current session -> agg1 //30초 세션 모니터링 임시 데이터.
