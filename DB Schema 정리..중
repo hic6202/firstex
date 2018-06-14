@@ -1,0 +1,209 @@
+-- Ref table
+CREATE TABLE `tbl_llt_server` (...) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COMMENT='server 테이블';
+
+CREATE TABLE `tbl_llt_so` (...) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 30sec
+CREATE TABLE `tbl_test_monitoring_session_a` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `log_date` datetime NOT NULL,
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `min5` int(11) NOT NULL,
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`),
+  KEY `time_idx` (`log_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블 A';
+
+CREATE TABLE `tbl_test_monitoring_session_b` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `log_date` datetime NOT NULL,
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `min5` int(11) NOT NULL,
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) DEFAULT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`),
+  KEY `time_idx` (`log_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블 B';
+
+--5min
+CREATE TABLE `tbl_llt_sessionsper5minute` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_time` datetime NOT NULL COMMENT '등록시간 updatetime으로 변경해야!',
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `minute` int(11) NOT NULL,
+  `server_ip` varchar(15) DEFAULT NULL,
+  `server_nm` varchar(255) DEFAULT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sessionsper5minute_uk` (`date`,`hour`,`minute`,`server_ip`,`so_cd`),
+  KEY `time_idx` (`event_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- monitoring
+CREATE TABLE `tbl_llt_current_service_flag` (
+  `update_time` datetime NOT NULL COMMENT '마지막 변경 시간',
+  `service_name` varchar(255) NOT NULL COMMENT '플래그 사용 서비스 명',
+  `flag` int(11) NOT NULL COMMENT 'Active 서비스 flag(1 or 2)',
+  UNIQUE KEY `currentserviceflag_uk` (`service_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO tbl_llt_current_service_flag (update_time, service_name, flag) 
+VALUES (now(), 'session monitoring', 1);
+
+CREATE TABLE `tbl_llt_current_serverinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_serverinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_soinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsoinfo_1_uk` (`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_soinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsoinfo_2_uk` (`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_socontentinfo_1` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsocontentinfo_1_uk` (`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_current_socontentinfo_2` (
+  `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `currentsocontentinfo_2_uk` (`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- server traffic 
+CREATE TABLE `tbl_llt_servertrafficperhour` (
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servertrafficperhour_uk` (`date`,`hour`,`server_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_servertrafficperday` (
+  `day_of_week` tinyint(4) NOT NULL COMMENT '요일',
+  `week_of_year` tinyint(4) NOT NULL COMMENT 'week number',
+  `date` varchar(8) NOT NULL,
+  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servertrafficperday_uk` (`date`,`server_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_servertrafficpermonth` (
+  `date` varchar(6) NOT NULL,
+  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servertrafficpermonth_uk` (`date`,`server_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- SO traffic 
+CREATE TABLE `tbl_llt_sotrafficperhour` (
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `sotrafficperhour_uk` (`date`,`hour`,`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_sotrafficperday` (
+  `day_of_week` tinyint(4) NOT NULL COMMENT '요일',
+  `week_of_year` tinyint(4) NOT NULL COMMENT 'week number',
+  `date` varchar(8) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `sotrafficperday_uk` (`date`,`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_sotrafficpermonth` (
+  `date` varchar(6) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY `sotrafficpermonth_uk` (`date`,`so_cd`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- vod log
+CREATE TABLE `tbl_test_vod_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
+  `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `filename` varchar(255) DEFAULT NULL,
+  `log_date` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1542 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
+
+CREATE TABLE `tbl_llt_aggregate_idbase_history` (
+  `id` int(11) NOT NULL DEFAULT 1,
+  `agg_completed_end_id` int(11) NOT NULL,
+  `resource_name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='id 기반 집계 이력 테이블. 성공시에만 남긴다.';
+
+-- server content hitcount
+-- SO content hitcount
+
+- vod log -> hitCount 집계
+(1000 row 씩 주기적으로 읽어와
+ => 시/일/월 테이블에 반영. 
+ !! 에러시 트랜잭션 처리하고, 재시도 하면 될 듯.
+)
+ - 임시 테이블 집계
+ - 시/일/월
