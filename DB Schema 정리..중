@@ -197,6 +197,10 @@ CREATE TABLE `tbl_llt_aggregate_idbase_history` (
   `resource_name` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='id 기반 집계 이력 테이블. 성공시에만 남긴다.';
 
+INSERT INTO tbl_llt_aggregate_idbase_history 
+(agg_completed_end_id, resource_name) 
+VALUES (0, 'vod log');
+
 -- server content hitcount
 CREATE TABLE `tbl_llt_servercontenthitcountperhour` (
   `date` varchar(8) NOT NULL,
