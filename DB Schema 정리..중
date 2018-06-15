@@ -36,6 +36,7 @@ CREATE TABLE `tbl_test_monitoring_session_b` (
 CREATE TABLE `tbl_llt_sessionsper5minute` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_time` datetime NOT NULL COMMENT '등록시간 updatetime으로 변경해야!',
+  `report_time` datetime NOT NULL COMMENT 'date, hour, minute 의 datetime 형태, 이름 정해야!!',
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `minute` int(11) NOT NULL,
