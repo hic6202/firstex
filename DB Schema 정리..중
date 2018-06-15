@@ -183,7 +183,7 @@ CREATE TABLE `tbl_llt_sotrafficpermonth` (
 
 -- vod log
 CREATE TABLE `tbl_test_vod_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
+  `id` bigint(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
   `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
   `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
   `filename` varchar(255) DEFAULT NULL,
