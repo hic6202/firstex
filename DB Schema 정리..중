@@ -11,7 +11,7 @@ CREATE TABLE `tbl_test_monitoring_session_a` (
   `hour` int(11) NOT NULL,
   `min5` int(11) NOT NULL,
   `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
-  `file_nm` varchar(255) DEFAULT NULL,
+  `file_nm` varchar(255) NOT NULL,
   `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`idx`),
@@ -25,7 +25,7 @@ CREATE TABLE `tbl_test_monitoring_session_b` (
   `hour` int(11) NOT NULL,
   `min5` int(11) NOT NULL,
   `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
-  `file_nm` varchar(255) DEFAULT NULL,
+  `file_nm` varchar(255) NOT NULL,
   `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`idx`),
@@ -39,7 +39,7 @@ CREATE TABLE `tbl_llt_sessionsper5minute` (
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `minute` int(11) NOT NULL,
-  `server_ip` varchar(15) DEFAULT NULL,
+  `server_ip` varchar(15) NOT NULL,
   `server_nm` varchar(255) DEFAULT NULL,
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
@@ -63,7 +63,7 @@ VALUES (now(), 'session monitoring', 1);
 
 CREATE TABLE `tbl_llt_current_serverinfo_1` (
   `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
-  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
   `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
@@ -74,7 +74,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_1` (
 
 CREATE TABLE `tbl_llt_current_serverinfo_2` (
   `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
-  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
   `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
@@ -129,28 +129,28 @@ CREATE TABLE `tbl_llt_current_socontentinfo_2` (
 CREATE TABLE `tbl_llt_servertrafficperhour` (
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
-  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
-  UNIQUE KEY `servertrafficperhour_uk` (`date`,`hour`,`server_id`)
+  UNIQUE KEY `servertrafficperhour_uk` (`date`,`hour`,`server_ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tbl_llt_servertrafficperday` (
   `day_of_week` tinyint(4) NOT NULL COMMENT '요일',
   `week_of_year` tinyint(4) NOT NULL COMMENT 'week number',
   `date` varchar(8) NOT NULL,
-  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
-  UNIQUE KEY `servertrafficperday_uk` (`date`,`server_id`)
+  UNIQUE KEY `servertrafficperday_uk` (`date`,`server_ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tbl_llt_servertrafficpermonth` (
   `date` varchar(6) NOT NULL,
-  `server_id` varchar(45) NOT NULL COMMENT 'server 식별 ID',
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
-  UNIQUE KEY `servertrafficpermonth_uk` (`date`,`server_id`)
+  UNIQUE KEY `servertrafficpermonth_uk` (`date`,`server_ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- SO traffic 
@@ -198,7 +198,66 @@ CREATE TABLE `tbl_llt_aggregate_idbase_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='id 기반 집계 이력 테이블. 성공시에만 남긴다.';
 
 -- server content hitcount
+CREATE TABLE `tbl_llt_servercontenthitcountperhour` (
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servercontenthitcountperhour_uk` (`date`,`hour`,`server_ip`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_servercontenthitcountperday` (
+  `day_of_week` tinyint(4) NOT NULL COMMENT '요일',
+  `week_of_year` tinyint(4) NOT NULL COMMENT 'week number',
+  `date` varchar(8) NOT NULL,
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servercontenthitcountperday_uk` (`date`,`server_ip`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_servercontenthitcountpermonth` (
+  `date` varchar(6) NOT NULL,
+  `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
+  `server_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `servercontenthitcountpermonth_uk` (`date`,`server_ip`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- SO content hitcount
+CREATE TABLE `tbl_llt_socontenthitcountperhour` (
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `socontenthitcountperhour_uk` (`date`,`hour`,`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_socontenthitcountperday` (
+  `day_of_week` tinyint(4) NOT NULL COMMENT 'SUN:0, MON:1, ..SAT:6',
+  `week_of_year` tinyint(4) NOT NULL COMMENT 'week number. 주의 시작:MON',
+  `date` varchar(8) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `socontenthitcountperday_uk` (`date`,`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_socontenthitcountpermonth` (
+  `date` varchar(6) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
+  `so_nm` varchar(255) DEFAULT NULL,
+  `file_name` varchar(100) NOT NULL,
+  `hit_count` int(11) NOT NULL DEFAULT 0,
+  UNIQUE KEY `socontenthitcountpermonth_uk` (`date`,`so_cd`,`file_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 - vod log -> hitCount 집계
 (1000 row 씩 주기적으로 읽어와
