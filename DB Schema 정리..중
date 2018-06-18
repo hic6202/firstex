@@ -190,7 +190,7 @@ CREATE TABLE `tbl_test_vod_log` (
   `filename` varchar(255) DEFAULT NULL,
   `log_date` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1542 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
 
 CREATE TABLE `tbl_llt_aggregate_idbase_history` (
   `id` int(11) NOT NULL DEFAULT 1,
