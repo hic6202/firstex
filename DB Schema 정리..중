@@ -134,6 +134,7 @@ CREATE TABLE `tbl_llt_servertrafficperhour` (
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
+  KEY `servertrafficperhour_key` (`date_hour`),
   UNIQUE KEY `servertrafficperhour_uk` (`date`,`hour`,`server_ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -163,6 +164,7 @@ CREATE TABLE `tbl_llt_sotrafficperhour` (
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
+  KEY `sotrafficperhour_key` (`date_hour`),
   UNIQUE KEY `sotrafficperhour_uk` (`date`,`hour`,`so_cd`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -213,6 +215,7 @@ CREATE TABLE `tbl_llt_servercontenthitcountperhour` (
   `server_nm` varchar(255) DEFAULT NULL,
   `file_name` varchar(100) NOT NULL,
   `hit_count` int(11) NOT NULL DEFAULT 0,
+  KEY `servercontenthitcountperhour_key` (`date_hour`),
   UNIQUE KEY `servercontenthitcountperhour_uk` (`date`,`hour`,`server_ip`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -245,6 +248,7 @@ CREATE TABLE `tbl_llt_socontenthitcountperhour` (
   `so_nm` varchar(255) DEFAULT NULL,
   `file_name` varchar(100) NOT NULL,
   `hit_count` int(11) NOT NULL DEFAULT 0,
+  KEY `socontenthitcountperhour_key` (`date_hour`),
   UNIQUE KEY `socontenthitcountperhour_uk` (`date`,`hour`,`so_cd`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
