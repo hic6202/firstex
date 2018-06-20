@@ -3,6 +3,11 @@ CREATE TABLE `tbl_llt_server` (...) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHAR
 
 CREATE TABLE `tbl_llt_so` (...) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `tbl_llt_setting_server`
+
+CREATE TABLE `tbl_llt_setting_so` 
+
+
 -- 30sec
 CREATE TABLE `tbl_test_monitoring_session_a` (
   `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
