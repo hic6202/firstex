@@ -90,6 +90,7 @@ CREATE TABLE `tbl_llt_current_soinfo_1` (
   `so_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentsoinfo_1_uk` (`so_cd`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -99,6 +100,7 @@ CREATE TABLE `tbl_llt_current_soinfo_2` (
   `so_nm` varchar(255) DEFAULT NULL,
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
+  `hit_count_critical` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentsoinfo_2_uk` (`so_cd`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
