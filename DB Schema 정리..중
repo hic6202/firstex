@@ -67,7 +67,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_1` (
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
-  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:pause)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`)
@@ -78,7 +78,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_2` (
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
-  `process_status` int(11) NOT NULL COMMENT '상태(0:off, 1:on)',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:pause)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`)
@@ -128,6 +128,7 @@ CREATE TABLE `tbl_llt_current_socontentinfo_2` (
 
 -- server traffic 
 CREATE TABLE `tbl_llt_servertrafficperhour` (
+  `date_hour` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
@@ -156,6 +157,7 @@ CREATE TABLE `tbl_llt_servertrafficpermonth` (
 
 -- SO traffic 
 CREATE TABLE `tbl_llt_sotrafficperhour` (
+  `date_hour` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `so_cd` varchar(45) NOT NULL,
@@ -204,6 +206,7 @@ VALUES (0, 'vod log');
 
 -- server content hitcount
 CREATE TABLE `tbl_llt_servercontenthitcountperhour` (
+  `date_hour` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
@@ -235,6 +238,7 @@ CREATE TABLE `tbl_llt_servercontenthitcountpermonth` (
 
 -- SO content hitcount
 CREATE TABLE `tbl_llt_socontenthitcountperhour` (
+  `date_hour` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
   `hour` int(11) NOT NULL,
   `so_cd` varchar(45) NOT NULL,
