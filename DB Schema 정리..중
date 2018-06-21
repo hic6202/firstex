@@ -9,6 +9,27 @@ CREATE TABLE `tbl_llt_setting_so`
 
 CREATE TABLE `tbl_llt_comm_cd`
 
+
+CREATE TABLE `tbl_llt_alarm_history` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `so_cd` varchar(50) NOT NULL,
+  `so_nm` varchar(255) NOT NULL,
+  `server_type` varchar(50) DEFAULT NULL,
+  `server_type_nm` varchar(255) DEFAULT NULL,
+  `server_ip` varchar(15) DEFAULT NULL,
+  `alarm_type` varchar(255) NOT NULL DEFAULT '',
+  `alarm_type_nm` varchar(255) NOT NULL DEFAULT '',
+  `cretical_point` varchar(255) NOT NULL DEFAULT '',
+  `alarm_Info` varchar(512) NOT NULL DEFAULT '',
+  `status` int(11) NOT NULL DEFAULT 0,
+  `created` datetime DEFAULT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_tbl_llt_alarm_history_created` (`created`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+
 -- 30sec
 CREATE TABLE `tbl_test_monitoring_session_a` (
   `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
