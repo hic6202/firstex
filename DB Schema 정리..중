@@ -28,9 +28,16 @@ CREATE TABLE `tbl_llt_alarm_history` (
   `updated_by` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ix_tbl_llt_alarm_history_created` (`created`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- 30sec
+CREATE TABLE `tbl_test_monitoring_vod_info` (
+  `monitoring_time` datetime NOT NULL,
+  `service_ip` varchar(15) NOT NULL COMMENT 'hc server IP',
+  `service_state` varchar(15) NOT NULL COMMENT 'server state',
+  KEY `time_idx` (`monitoring_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 서버 테이블';
+
 CREATE TABLE `tbl_test_monitoring_session_a` (
   `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
   `log_date` datetime NOT NULL,
