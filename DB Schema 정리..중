@@ -222,13 +222,13 @@ CREATE TABLE `tbl_llt_sotrafficpermonth` (
 
 -- vod log
 CREATE TABLE `tbl_temp_vod_log` (
-  `id` bigint(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
+  `id` bigint(11) NOT NULL COMMENT 'id',
   `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
   `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
   `filename` varchar(255) DEFAULT NULL,
   `log_date` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log temp 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='vod_log temp 테이블';
 
 CREATE TABLE `tbl_llt_aggregate_idbase_history` (
   `id` int(11) NOT NULL DEFAULT 1,
