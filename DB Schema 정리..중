@@ -31,14 +31,14 @@ CREATE TABLE `tbl_llt_alarm_history` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- 30sec
-CREATE TABLE `tbl_test_monitoring_vod_info` (
+CREATE TABLE `tbl_temp_monitoring_vod_info` (
   `monitoring_time` datetime NOT NULL,
   `service_ip` varchar(15) NOT NULL COMMENT 'hc server IP',
   `service_state` varchar(15) NOT NULL COMMENT 'server state',
   KEY `time_idx` (`monitoring_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 서버 테이블';
 
-CREATE TABLE `tbl_test_monitoring_session_a` (
+CREATE TABLE `tbl_temp_monitoring_session_a` (
   `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
   `log_date` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE `tbl_test_monitoring_session_a` (
   KEY `time_idx` (`log_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블 A';
 
-CREATE TABLE `tbl_test_monitoring_session_b` (
+CREATE TABLE `tbl_temp_monitoring_session_b` (
   `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
   `log_date` datetime NOT NULL,
   `date` varchar(8) NOT NULL,
@@ -221,14 +221,14 @@ CREATE TABLE `tbl_llt_sotrafficpermonth` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- vod log
-CREATE TABLE `tbl_test_vod_log` (
+CREATE TABLE `tbl_temp_vod_log` (
   `id` bigint(11) NOT NULL AUTO_INCREMENT COMMENT '자동 증가 id',
   `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
   `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
   `filename` varchar(255) DEFAULT NULL,
   `log_date` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log test 테이블';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='vod_log temp 테이블';
 
 CREATE TABLE `tbl_llt_aggregate_idbase_history` (
   `id` int(11) NOT NULL DEFAULT 1,
