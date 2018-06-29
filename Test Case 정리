@@ -1,0 +1,19 @@
+1. 30초 모니터링 vodInfo => 테이블 Truncate은 된 후, list = null이면, insert 할 데이터 없어 아무것도 하지 않고 종료. (ㅇㅋ. 처리 완료!)
+  - vodInfo list => OK (list size=0 -> 모든 서버 error. list size>0 -> LB 서버 running 추가 OK)
+  - vodInfo null => OK (LB 서버 error 추가 OK)
+  - vodInfoDetail resultCode = 200 => serviceState 대로 저장
+               , resultCode != 200 => serviceState error 로 저장(OK)
+
+2. 30초 모니터링 session => resultCode = 200 && not null && size > 0 이면 insert 
+                           아니면, dao 자체 타지 않아 괜찮음 (ㅇㅋ. 향후 개선시 확인 필요!!)
+ !! ==> 향후, 5분 제한 없이 flag 테이블 이용으로 바꿀 경우 ==> 1. 처리와 같이 쿼리에서 null 판단하여 분기처리 필요. 왜냐면, flag 값 업데이트 위해!!
+ (대상: tbl_temp_monitoring_session_a/b 테이블)
+
+..ing
+3. 30초 모니터링 => current_serverinfo.. / current_soinfo.. 데이터 생성시 
+  - 서버 모니터링 결과 tbl_temp_monitoring_vod_info 에 저장되는 데이터 없어도 => 각 서버 error 상태로 나옴
+  - 세션 모니터링 결과 tbl_temp_monitoring_session_a/b 에 저장되는 데이터 없어도 => 각 SO traffic, traffic_critical, hit_count_critical 잘 나옴
+4. 30초 모니터링 => current_socontentinfo.. 데이터 생성시
+  * 세션 모니터링 결과 tbl_temp_monitoring_session_a/b 에 저장되는 데이터 없으면 => 데이터 없음.
+
+* 집계처리 확인
