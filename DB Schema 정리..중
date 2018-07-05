@@ -66,6 +66,20 @@ CREATE TABLE `tbl_temp_monitoring_session_b` (
   KEY `time_idx` (`log_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 임시 테이블 B';
 
+CREATE TABLE `tbl_temp_monitoring_session_backup` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT COMMENT '이력용 id',
+  `log_date` datetime NOT NULL,
+  `date` varchar(8) NOT NULL,
+  `hour` int(11) NOT NULL,
+  `min5` int(11) NOT NULL,
+  `vod_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
+  `file_nm` varchar(255) NOT NULL,
+  `stb_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `traffic` bigint(20) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idx`),
+  KEY `time_idx` (`log_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 테이블 backup 테이블';
+
 -- 5min
 CREATE TABLE `tbl_llt_sessionsper5minute` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -101,7 +115,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_1` (
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
-  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:pause)',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:paused)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`)
@@ -112,7 +126,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_2` (
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) NOT NULL COMMENT 'server 이름',
   `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
-  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:pause)',
+  `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:paused)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
   UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`)
