@@ -12,15 +12,15 @@ CREATE TABLE `tbl_llt_comm_cd`
 
 CREATE TABLE `tbl_llt_alarm_history` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `so_cd` varchar(50) NOT NULL,
+  `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) NOT NULL,
   `server_type` varchar(50) DEFAULT NULL,
   `server_type_nm` varchar(255) DEFAULT NULL,
   `server_ip` varchar(15) DEFAULT NULL,
   `alarm_type` varchar(255) NOT NULL DEFAULT '',
   `alarm_type_nm` varchar(255) NOT NULL DEFAULT '',
-  `cretical_point` varchar(255) NOT NULL DEFAULT '',
-  `alarm_Info` varchar(512) NOT NULL DEFAULT '',
+  `critical_point` varchar(255) NOT NULL DEFAULT '',
+  `alarm_info` varchar(512) NOT NULL DEFAULT '',
   `status` int(11) NOT NULL DEFAULT 0,
   `created` datetime DEFAULT NULL,
   `created_by` varchar(255) DEFAULT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE `tbl_temp_monitoring_session_backup` (
 
 -- 5min
 CREATE TABLE `tbl_llt_sessionsper5minute` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `update_time` datetime NOT NULL COMMENT '등록시간',
   `report_time` datetime NOT NULL COMMENT 'date, hour, minute 의 datetime 형태',
   `date` varchar(8) NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE `tbl_llt_current_socontentinfo_1` (
   `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `hit_count` int(11) NOT NULL DEFAULT 0,
   `hit_count_critical` int(11) NOT NULL DEFAULT 0,
@@ -167,7 +167,7 @@ CREATE TABLE `tbl_llt_current_socontentinfo_2` (
   `monitoring_time` datetime NOT NULL COMMENT '모니터링 시간',
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `hit_count` int(11) NOT NULL DEFAULT 0,
   `hit_count_critical` int(11) NOT NULL DEFAULT 0,
@@ -236,18 +236,18 @@ CREATE TABLE `tbl_llt_sotrafficpermonth` (
 
 -- vod log
 CREATE TABLE `tbl_temp_vod_log` (
-  `id` bigint(11) NOT NULL COMMENT 'id',
-  `server_ip` varchar(15) NOT NULL COMMENT 'hc vod server IP',
-  `client_ip` varchar(15) NOT NULL COMMENT 'so vod server IP',
+  `id` bigint(20) NOT NULL COMMENT 'id',
+  `server_ip` varchar(16) NOT NULL COMMENT 'hc vod server IP',
+  `client_ip` varchar(16) DEFAULT NULL COMMENT 'so vod server IP',
   `filename` varchar(255) DEFAULT NULL,
-  `log_date` datetime NOT NULL,
+  `log_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='vod_log temp 테이블';
 
 CREATE TABLE `tbl_llt_aggregate_idbase_history` (
   `id` int(11) NOT NULL DEFAULT 1,
-  `agg_completed_end_id` int(11) NOT NULL,
-  `resource_name` varchar(255) DEFAULT NULL
+  `agg_completed_end_id` bigint(20) NOT NULL,
+  `resource_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='id 기반 집계 이력 테이블. 성공시에만 남긴다.';
 
 INSERT INTO tbl_llt_aggregate_idbase_history 
@@ -261,7 +261,7 @@ CREATE TABLE `tbl_llt_servercontenthitcountperhour` (
   `hour` int(11) NOT NULL,
   `server_ip` varchar(45) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   KEY `servercontenthitcountperhour_key` (`date_hour`),
   UNIQUE KEY `servercontenthitcountperhour_uk` (`date`,`hour`,`server_ip`,`file_name`)
@@ -273,7 +273,7 @@ CREATE TABLE `tbl_llt_servercontenthitcountperday` (
   `date` varchar(8) NOT NULL,
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `servercontenthitcountperday_uk` (`date`,`server_ip`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -282,7 +282,7 @@ CREATE TABLE `tbl_llt_servercontenthitcountpermonth` (
   `date` varchar(6) NOT NULL,
   `server_ip` varchar(15) NOT NULL COMMENT 'server ip',
   `server_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `servercontenthitcountpermonth_uk` (`date`,`server_ip`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -294,7 +294,7 @@ CREATE TABLE `tbl_llt_socontenthitcountperhour` (
   `hour` int(11) NOT NULL,
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   KEY `socontenthitcountperhour_key` (`date_hour`),
   UNIQUE KEY `socontenthitcountperhour_uk` (`date`,`hour`,`so_cd`,`file_name`)
@@ -306,7 +306,7 @@ CREATE TABLE `tbl_llt_socontenthitcountperday` (
   `date` varchar(8) NOT NULL,
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `socontenthitcountperday_uk` (`date`,`so_cd`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -315,7 +315,7 @@ CREATE TABLE `tbl_llt_socontenthitcountpermonth` (
   `date` varchar(6) NOT NULL,
   `so_cd` varchar(45) NOT NULL,
   `so_nm` varchar(255) DEFAULT NULL,
-  `file_name` varchar(100) NOT NULL,
+  `file_name` varchar(255) NOT NULL DEFAULT '',
   `hit_count` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `socontenthitcountpermonth_uk` (`date`,`so_cd`,`file_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
