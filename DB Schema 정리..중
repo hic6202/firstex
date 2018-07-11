@@ -1,7 +1,7 @@
 -- Ref table
-CREATE TABLE `tbl_llt_server` (...) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COMMENT='server 테이블';
-
 CREATE TABLE `tbl_llt_so` (...) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tbl_llt_server` (...) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COMMENT='server 테이블';
 
 CREATE TABLE `tbl_llt_setting_server`
 
