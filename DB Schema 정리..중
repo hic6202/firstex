@@ -34,6 +34,7 @@ CREATE TABLE `tbl_llt_alarm_history` (
 CREATE TABLE `tbl_agg_temp_monitoring_vod_info` (
   `monitoring_time` datetime NOT NULL,
   `service_ip` varchar(15) NOT NULL COMMENT 'hc server IP',
+  `server_type` varchar(50) NOT NULL COMMENT 'server 타입',
   `service_state` varchar(15) NOT NULL COMMENT 'server state',
   KEY `time_idx` (`monitoring_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='30초 모니터링 서버 테이블';
@@ -90,7 +91,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_1` (
   `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:paused)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
-  UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`)
+  UNIQUE KEY `currentserverinfo_1_uk` (`server_ip`, `server_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tbl_llt_current_serverinfo_2` (
@@ -101,7 +102,7 @@ CREATE TABLE `tbl_llt_current_serverinfo_2` (
   `process_status` int(11) NOT NULL COMMENT '상태(0:error, 1:running, 2:paused)',
   `traffic` bigint(20) NOT NULL DEFAULT 0,
   `traffic_critical` bigint(20) NOT NULL DEFAULT 0,
-  UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`)
+  UNIQUE KEY `currentserverinfo_2_uk` (`server_ip`, `server_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tbl_llt_current_soinfo_1` (
